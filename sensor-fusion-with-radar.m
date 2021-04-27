@@ -188,7 +188,12 @@ function filter = initSimDemoFilter(detection)
 %TODO: Implement the Kalman filter using trackingKF function. If stuck
 %review the implementation discussed in the project walkthrough
 
-
+H = [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1];
+filter = trackingKF('MotionModel', '2D constant Velocity', ...
+                    'State', H * detection.Measurement,...
+                    'MeasurementModel', H, ...
+                    'StateCovariance', H * detect.MeasurementNoise * H, ...
+                    'MeasurementNoise', detection.MeasurementNoise);
 end
 
 %%%
@@ -224,8 +229,18 @@ while ~isempty(leftToCheck)
     % consideration
     
     %TODO : Complete the clustering loop based on the implementation
-    %discussed in the lesson 
-
+    %discussed in the lesson
+    underConsideration = leftToCheck(1);
+    clusterInds = (distances(underConsideration, leftToCheck) < vehicleSize);
+    detInds = leftToCheck(clusterInds);
+    clusterDets = [detections{detInds}];
+    clusterMeas = [clusterDets.Measurement];
+    meas = mean(clusterMeas,2);
+    meas2D = [meas(1:2); meas(4:5)];
+    i = i+1;
+    detectionClusters{i} = detections{detInds(1)};
+    detectionClusters{i}.Measurement  = meas2D;
+    leftToCheck(clusterInds) = [];
 end
 detectionClusters(i+1:end) = [];
 
